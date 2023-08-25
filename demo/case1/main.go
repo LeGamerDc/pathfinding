@@ -12,7 +12,7 @@ func main() {
 	world := newWorld()
 	world.Init()
 	ebiten.SetWindowSize(demo.ScreenWidth, demo.ScreenHeight)
-	ebiten.SetWindowTitle("agent demo")g
+	ebiten.SetWindowTitle("agent demo")
 	//world.ws.Fill(0, 0)
 	//world.ws.Dump()
 	if err := ebiten.RunGame(world); err != nil {
