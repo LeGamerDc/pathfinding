@@ -162,5 +162,5 @@ func (a *Agent) setLocalTarget(pos Vec2, ti float64) {
 }
 
 func nextWait() int {
-	return rand.Intn(16)
+	return rand.Intn(4)
 }

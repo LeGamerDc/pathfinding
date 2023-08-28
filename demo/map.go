@@ -140,6 +140,14 @@ func (w *World) Layout(_, _ int) (int, int) {
 func (w *World) Update() error {
 	now := float64(time.Now().UnixNano()) / 1e9
 	if !w.start {
+		// wait 20s
+		if w.lastFrame == 0 {
+			w.lastFrame = now
+		}
+		if now-w.lastFrame < 20 {
+			return nil
+		}
+
 		w.start = true
 		w.lastFrame = now
 		w.lastTick = now
@@ -177,6 +185,7 @@ func (w *World) tick(ti float64, t int) {
 				agent.wait = nextWait()
 				continue
 			}
+			agent.setLocalTarget(agent.Pos, ti)
 			agent.st = StatusMoving
 		case StatusMoving:
 			agent.Pos = agent.nextPos
@@ -184,6 +193,7 @@ func (w *World) tick(ti float64, t int) {
 			if !ok {
 				agent.path = nil
 				agent.st = StatusTerminate
+				fmt.Println("finish", agent.Pos)
 			} else {
 				//w.setObstacle(agent)
 				ax, ay := pos2grid(agent.Pos)
@@ -203,7 +213,7 @@ func (w *World) tick(ti float64, t int) {
 			v, u, ok := w.rvo.Solve(rvoAgent(agent), func() (*rvo2.Agent, bool) {
 				for jdx+1 < len(w.Agents) {
 					jdx++
-					if jdx == idx || agent.st != StatusMoving {
+					if jdx == idx || w.Agents[jdx].st != StatusMoving {
 						continue
 					}
 					return rvoAgent(w.Agents[jdx]), true
@@ -233,9 +243,8 @@ func (w *World) tick(ti float64, t int) {
 		}
 		x, y := pos2grid(agent.nextPos)
 		if w.ws.IsSet(x, y) {
-			fmt.Printf("stop wall %v -> ", agent.Pos)
+			fmt.Printf("stop wall %v -> %v\n", agent.Pos, agent.nextPos)
 			agent.Stop()
-			fmt.Printf("%v \n", agent.Pos)
 		} else {
 			for _, b := range w.Agents {
 				if b.st != StatusMoving && sameGrid(agent.nextPos, b.Pos) {

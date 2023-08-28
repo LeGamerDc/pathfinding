@@ -44,7 +44,7 @@ func newWorld() *demo.World {
 	w := &demo.World{
 		Map: t,
 	}
-	test1(w)
+	test4(w)
 	return w
 }
 
@@ -63,4 +63,22 @@ func test3(w *demo.World) {
 	w.SetAgent(demo.Vec2{X: 24.9, Y: 40}, demo.Vec2{X: 25, Y: 12}, 1.2)
 	w.SetAgent(demo.Vec2{X: 10, Y: 24.9}, demo.Vec2{X: 38, Y: 25}, 1.2)
 	w.SetAgent(demo.Vec2{X: 40, Y: 25.1}, demo.Vec2{X: 13, Y: 25}, 1.2)
+}
+
+func test4(w *demo.World) {
+	w.SetAgent(demo.Vec2{X: 20.5, Y: 20.5}, demo.Vec2{X: 20.5, Y: 20.5}, 1.2)
+	w.SetAgent(demo.Vec2{X: 21.5, Y: 20.5}, demo.Vec2{X: 21.5, Y: 20.5}, 1.2)
+	w.SetAgent(demo.Vec2{X: 22.5, Y: 21.5}, demo.Vec2{X: 22.5, Y: 21.5}, 1.2)
+	w.SetAgent(demo.Vec2{X: 23.5, Y: 21.5}, demo.Vec2{X: 23.5, Y: 21.5}, 1.2)
+	w.SetAgent(demo.Vec2{X: 24.5, Y: 22.5}, demo.Vec2{X: 24.5, Y: 22.5}, 1.2)
+	w.SetAgent(demo.Vec2{X: 24.5, Y: 25.5}, demo.Vec2{X: 24.5, Y: 25.5}, 1.2)
+	w.SetAgent(demo.Vec2{X: 23.5, Y: 26.5}, demo.Vec2{X: 23.5, Y: 26.5}, 1.2)
+	w.SetAgent(demo.Vec2{X: 22.5, Y: 26.5}, demo.Vec2{X: 22.5, Y: 26.5}, 1.2)
+	w.SetAgent(demo.Vec2{X: 21.5, Y: 27.5}, demo.Vec2{X: 21.5, Y: 27.5}, 1.2)
+	w.SetAgent(demo.Vec2{X: 20.5, Y: 27.5}, demo.Vec2{X: 20.5, Y: 27.5}, 1.2)
+
+	w.SetAgent(demo.Vec2{X: 25.5, Y: 22.5}, demo.Vec2{X: 24.5, Y: 23.5}, 1.2)
+	w.SetAgent(demo.Vec2{X: 25.5, Y: 25.5}, demo.Vec2{X: 24.5, Y: 24.5}, 1.2)
+
+	w.SetAgent(demo.Vec2{X: 11.7, Y: 23.5}, demo.Vec2{X: 31.1, Y: 23.5}, 1.7)
 }
