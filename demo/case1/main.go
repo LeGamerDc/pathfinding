@@ -44,7 +44,7 @@ func newWorld() *demo.World {
 	w := &demo.World{
 		Map: t,
 	}
-	test4(w)
+	test3(w)
 	return w
 }
 
@@ -59,10 +59,10 @@ func test2(w *demo.World) {
 }
 
 func test3(w *demo.World) {
-	w.SetAgent(demo.Vec2{X: 25.1, Y: 10}, demo.Vec2{X: 25, Y: 38}, 1.2)
-	w.SetAgent(demo.Vec2{X: 24.9, Y: 40}, demo.Vec2{X: 25, Y: 12}, 1.2)
-	w.SetAgent(demo.Vec2{X: 10, Y: 24.9}, demo.Vec2{X: 38, Y: 25}, 1.2)
-	w.SetAgent(demo.Vec2{X: 40, Y: 25.1}, demo.Vec2{X: 13, Y: 25}, 1.2)
+	w.SetAgent(demo.Vec2{X: 25.1, Y: 20}, demo.Vec2{X: 25, Y: 28}, 1.2)
+	w.SetAgent(demo.Vec2{X: 24.9, Y: 30}, demo.Vec2{X: 25, Y: 22}, 1.2)
+	w.SetAgent(demo.Vec2{X: 20, Y: 24.9}, demo.Vec2{X: 28, Y: 25}, 1.2)
+	w.SetAgent(demo.Vec2{X: 30, Y: 25.1}, demo.Vec2{X: 22, Y: 25}, 1.2)
 }
 
 func test4(w *demo.World) {

@@ -52,9 +52,10 @@ dota2的寻路系统分为长寻路和本地寻路，长寻路仅考虑地形障
 2. 根据所有单位的预期速度预期速度计算碰撞避免后速度作为真实速度。
 3. 根据以上速度计算单位下个帧是否会碰撞，如果是则停止行走并等待若干tick后重新发起寻路。
 
-以上方案中的碰撞避免的算法比orca中的处理会少一些，因为我们可以通过动态障碍参与寻路来兜底
+以上方案中的碰撞避免的算法比orca中的处理会少一些，因为我们可以通过动态障碍参与寻路来兜底。下图展示了一下计算帧为4时的一些示例：
 
-![参考示例](https://github.com/LeGamerDc/pathfinding/blob/master/images/show.gif)
+![参考示例1](https://github.com/LeGamerDc/pathfinding/blob/master/images/show1.gif)
+![参考示例2](https://github.com/LeGamerDc/pathfinding/blob/master/images/show2.gif)
 
 #### 碰撞避免
 
