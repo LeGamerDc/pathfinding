@@ -56,6 +56,7 @@ dota2的寻路系统分为长寻路和本地寻路，长寻路仅考虑地形障
 
 ![参考示例1](https://github.com/LeGamerDc/pathfinding/blob/master/images/show1.gif)
 ![参考示例2](https://github.com/LeGamerDc/pathfinding/blob/master/images/show2.gif)
+![参考示例3](https://github.com/LeGamerDc/pathfinding/blob/master/images/show3.gif)
 
 #### 碰撞避免
 

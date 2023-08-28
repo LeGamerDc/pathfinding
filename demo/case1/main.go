@@ -44,7 +44,7 @@ func newWorld() *demo.World {
 	w := &demo.World{
 		Map: t,
 	}
-	test3(w)
+	test1(w)
 	return w
 }
 
