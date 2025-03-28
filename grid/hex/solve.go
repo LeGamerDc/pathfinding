@@ -109,6 +109,9 @@ func (ws *WorkSpace) getOutOpenSet() (x, y, d, c int32, ok bool) {
 
 func (ws *WorkSpace) putInOpenSet(x, y, d, fx, fy, c int32) {
 	node := ws.pool.GetNode(x, y)
+	if node == nil {
+		return
+	}
 	switch node.Status {
 	case grid.NodeNew:
 		node.FPos = grid.Gpos{X: fx, Y: fy}

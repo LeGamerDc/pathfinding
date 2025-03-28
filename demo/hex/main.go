@@ -14,7 +14,7 @@ import (
 const (
 	ox    = 100
 	oy    = 100
-	ratio = 0.3
+	ratio = 0.17
 )
 
 var (
@@ -61,7 +61,7 @@ func CreateMap() *hex.WorkSpace {
 			m.SetGrid(int32(i), int32(j), new(grid.Grid))
 		}
 	}
-	ws := hex.NewWorkSpace(1000)
+	ws := hex.NewWorkSpace(256)
 	for i := int32(0); i < 32; i++ {
 		for j := int32(0); j < 32; j++ {
 			if (i == 0 && j == 0) || (i == 31 && j == 31) {
