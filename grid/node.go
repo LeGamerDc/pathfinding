@@ -30,44 +30,33 @@ type Gnode struct {
 }
 
 type NodePool struct {
-	mNode  []Gnode // size = maxNodes
-	mNext  []int32 // size = maxNodes
-	mFirst []int32 // size = hashSize
+	mNode []Gnode // size = maxNodes
+	mHash map[Gpos]int32
 
-	maxNodes, hashSize, nodeCnt int32
+	maxNodes, nodeCnt int32
 }
 
 func NewNodePool(maxNodes int32) *NodePool {
-	hashSize := int32(nextPow2(uint32(maxNodes / 4)))
 	pool := &NodePool{
 		mNode:    make([]Gnode, maxNodes),
-		mNext:    make([]int32, maxNodes),
-		mFirst:   make([]int32, hashSize),
+		mHash:    make(map[Gpos]int32, maxNodes),
 		maxNodes: maxNodes,
-		hashSize: hashSize,
 	}
-	memset(pool.mFirst, -1)
-	memset(pool.mNext, -1)
 	return pool
 }
 
 func (p *NodePool) Clear() {
-	memset(p.mFirst, -1)
+	clear(p.mHash)
 	p.nodeCnt = 0
 }
 
 func (p *NodePool) GetNode(x, y int32) *Gnode {
-	var (
-		pos    = Gpos{X: x, Y: y}
-		bucket = pos.Hash() & (p.hashSize - 1)
-		i      = p.mFirst[bucket]
-	)
-	for i != -1 {
-		if p.mNode[i].Pos == pos {
-			return &p.mNode[i]
-		}
-		i = p.mNext[i]
+	pos := Gpos{X: x, Y: y}
+	i, ok := p.mHash[pos]
+	if ok {
+		return &p.mNode[i]
 	}
+
 	if p.nodeCnt >= p.maxNodes {
 		return nil
 	}
@@ -75,23 +64,14 @@ func (p *NodePool) GetNode(x, y int32) *Gnode {
 	p.mNode[i] = Gnode{
 		Pos: pos,
 	}
-	p.mNext[i] = p.mFirst[bucket]
-	p.mFirst[bucket] = i
+	p.mHash[pos] = i
 	p.nodeCnt++
 	return &p.mNode[i]
 }
 
 func (p *NodePool) FindNode(x, y int32) *Gnode {
-	var (
-		pos    = Gpos{X: x, Y: y}
-		bucket = pos.Hash() & (p.hashSize - 1)
-		i      = p.mFirst[bucket]
-	)
-	for i != -1 {
-		if p.mNode[i].Pos == pos {
-			return &p.mNode[i]
-		}
-		i = p.mNext[i]
+	if i, ok := p.mHash[Gpos{X: x, Y: y}]; ok {
+		return &p.mNode[i]
 	}
 	return nil
 }

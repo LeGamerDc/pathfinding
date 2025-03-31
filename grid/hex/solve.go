@@ -208,8 +208,9 @@ func Move(x, y, d int32) (int32, int32) {
 }
 
 func dist(x, y, fx, fy int32) int32 {
-	q, r := xy2qr(x-fx, y-fy)
-	return (abs(q) + abs(r) + abs(q+r)) / 2
+	q, r := xy2qr(x, y)
+	fq, fr := xy2qr(fx, fy)
+	return (abs(q-fq) + abs(r-fr) + abs(q+r-fq-fr)) / 2
 }
 
 func xy2qr(x, y int32) (q, r int32) {

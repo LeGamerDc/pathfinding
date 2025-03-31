@@ -1,9 +1,11 @@
 package hex
 
 import (
-	"github.com/stretchr/testify/assert"
+	"fmt"
 	"math/rand"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTransform(t *testing.T) {
@@ -15,4 +17,8 @@ func TestTransform(t *testing.T) {
 		assert.Equal(t, x1, x, "x")
 		assert.Equal(t, y1, y, "y")
 	}
+}
+
+func TestMidPoint(t *testing.T) {
+	fmt.Println(midPoint(3, 4, 0, 1))
 }

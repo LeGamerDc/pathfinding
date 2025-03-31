@@ -2,19 +2,22 @@ package main
 
 import (
 	"fmt"
-	"github.com/fogleman/gg"
-	"github.com/legamerdc/pathfinding/grid"
-	"github.com/legamerdc/pathfinding/grid/hex"
 	"image/color"
 	"math"
 	"math/rand"
 	"time"
+
+	"github.com/fogleman/gg"
+	"github.com/legamerdc/pathfinding/grid"
+	"github.com/legamerdc/pathfinding/grid/hex"
 )
 
 const (
 	ox    = 100
 	oy    = 100
-	ratio = 0.17
+	ratio = 0.41
+
+	nx, ny = 3, 3
 )
 
 var (
@@ -26,8 +29,8 @@ var (
 func main() {
 	bg := gg.NewContext(1000, 1000)
 	ws := CreateMap()
-	for i := int32(0); i < 32; i++ {
-		for j := int32(0); j < 32; j++ {
+	for i := int32(0); i < 16*nx; i++ {
+		for j := int32(0); j < 16*ny; j++ {
 			cx, cy := center(i, j)
 			if ws.Map.Available(i, j) {
 				drawHexagon(bg, ox+cx, oy+cy, 10, colorG)
@@ -38,16 +41,21 @@ func main() {
 	}
 	fmt.Println("start solve")
 	start := time.Now()
-	path, ok := ws.Solve(0, 0, 31, 31)
+	var (
+		path []grid.PathGrid
+		ok   bool
+	)
+	path, ok = ws.Solve(0, 0, 16*nx-1, 16*ny-1)
+
 	if !ok {
 		fmt.Println("no path: ", time.Since(start))
-		return
-	}
-	fmt.Println("end solve: ", time.Since(start))
-	for i := 1; i < len(path); i++ {
-		x1, y1 := center(path[i-1].X, path[i-1].Y)
-		x2, y2 := center(path[i].X, path[i].Y)
-		drawLine(bg, ox+x1, oy+y1, ox+x2, oy+y2, colorR)
+	} else {
+		fmt.Println("end solve: ", time.Since(start))
+		for i := 1; i < len(path); i++ {
+			x1, y1 := center(path[i-1].X, path[i-1].Y)
+			x2, y2 := center(path[i].X, path[i].Y)
+			drawLine(bg, ox+x1, oy+y1, ox+x2, oy+y2, colorR)
+		}
 	}
 
 	//drawHexagon(bg, 200, 200, 10, color.RGBA{R: 144, G: 238, B: 144, A: 128})
@@ -55,16 +63,16 @@ func main() {
 }
 
 func CreateMap() *hex.WorkSpace {
-	m := grid.NewLocal(2, 2)
-	for i := 0; i < 2; i++ {
-		for j := 0; j < 2; j++ {
+	m := grid.NewLocal(nx, ny)
+	for i := 0; i < nx; i++ {
+		for j := 0; j < ny; j++ {
 			m.SetGrid(int32(i), int32(j), new(grid.Grid))
 		}
 	}
-	ws := hex.NewWorkSpace(256)
-	for i := int32(0); i < 32; i++ {
-		for j := int32(0); j < 32; j++ {
-			if (i == 0 && j == 0) || (i == 31 && j == 31) {
+	ws := hex.NewWorkSpace(1200)
+	for i := int32(0); i < 16*nx; i++ {
+		for j := int32(0); j < 16*ny; j++ {
+			if (i == 0 && j == 0) || (i == 16*nx-1 && j == 16*ny-1) {
 				continue
 			}
 			if rand.Float32() < ratio {
