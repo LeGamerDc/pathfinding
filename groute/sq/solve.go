@@ -1,33 +1,35 @@
-package hex
+package sq
 
 import (
-	"github.com/legamerdc/pathfinding/grid"
-
 	"slices"
+
+	"github.com/legamerdc/pathfinding/groute/grid"
 )
 
 /*
-  ↑ y → x
-	  4s  5
-	3   *   0s
-	  2s  1
+N, NE, E, SE, S, SW, W, NW
+
+	7  0  1		6  7  0
+	6  *  2		5  *  1
+	5  4  3		4  3  2
 */
 
 type dirSet uint32
 
 const (
-	_fullDirSetdirSet dirSet = (1 << 6) - 1
+	_fullDirSetdirSet dirSet = (1 << 8) - 1
 	_emptyDirSet      dirSet = 0
 
 	_noDir = 0xff
+
+	avoidCorner = true
 )
 
 func (s *dirSet) dirAdd(d int32) {
 	*s |= 1 << d
 }
-
 func (s *dirSet) dirIter(f func(d int32) bool) {
-	for d := int32(0); d < 6; d++ {
+	for d := int32(0); d < 8; d++ {
 		if (*s)&(1<<d) != 0 {
 			if !f(d) {
 				return
@@ -68,7 +70,7 @@ func (ws *WorkSpace) Solve(sx, sy, ex, ey int32) (p []grid.PathGrid, ok bool) {
 		if x == ex && y == ey {
 			return ws.path(sx, sy)
 		}
-		set := ws.naturalDir(d) | ws.forceDir(x, y, d)
+		set := ws.naturalDir(x, y, d) | ws.forceDir(x, y, d)
 		set.dirIter(func(nd int32) bool {
 			return !ws.jump(x, y, x, y, nd, c)
 		})
@@ -82,6 +84,11 @@ func (ws *WorkSpace) jump(x, y, fx, fy, d, c int32) bool {
 		if !ws.Map.Available(x, y) {
 			return false
 		}
+		if avoidCorner && diagonal(d) {
+			if !(ws.walkable(x, y, d, 3) && ws.walkable(x, y, d, 5)) {
+				return false
+			}
+		}
 		if x == ws.endX && y == ws.endY {
 			ws.putInOpenSet(x, y, d, fx, fy, c)
 			return true
@@ -90,8 +97,8 @@ func (ws *WorkSpace) jump(x, y, fx, fy, d, c int32) bool {
 			ws.putInOpenSet(x, y, d, fx, fy, c)
 			return false
 		}
-		if spread(d) {
-			if ws.jump(x, y, fx, fy, (d+1)%6, c) || ws.jump(x, y, fx, fy, (d+5)%6, c) {
+		if diagonal(d) {
+			if ws.jump(x, y, (d+7)%8, fx, fy, c) || ws.jump(x, y, (d+1)%8, fx, fy, c) {
 				return true
 			}
 		}
@@ -134,30 +141,67 @@ func (ws *WorkSpace) putInOpenSet(x, y, d, fx, fy, c int32) {
 	}
 }
 
-func (ws *WorkSpace) naturalDir(curDir int32) (s dirSet) {
+func (ws *WorkSpace) naturalDir(x, y, curDir int32) (s dirSet) {
 	if curDir == _noDir {
 		return _fullDirSetdirSet
 	}
-	s.dirAdd(curDir)
-	if spread(curDir) {
-		s.dirAdd((curDir + 1) % 6)
-		s.dirAdd((curDir + 5) % 6)
+	if avoidCorner {
+		if diagonal(curDir) {
+			if !ws.walkable(x, y, curDir, 7) {
+				s.dirAdd((curDir + 1) % 8)
+			} else if !ws.walkable(x, y, curDir, 1) {
+				s.dirAdd((curDir + 7) % 8)
+			} else {
+				s.dirAdd(curDir)
+				s.dirAdd((curDir + 1) % 8)
+				s.dirAdd((curDir + 7) % 8)
+			}
+		} else {
+			s.dirAdd(curDir)
+		}
+	} else {
+		s.dirAdd(curDir)
+		if diagonal(curDir) {
+			s.dirAdd((curDir + 1) % 8)
+			s.dirAdd((curDir + 7) % 8)
+		}
 	}
-
 	return s
 }
 
 func (ws *WorkSpace) forceDir(x, y, curDir int32) (s dirSet) {
-	if curDir == _noDir || spread(curDir) {
+	if curDir == _noDir {
 		return _emptyDirSet
 	}
-	if !ws.walkable(x, y, curDir, 2) {
-		s.dirAdd((curDir + 1) % 6)
+	if avoidCorner {
+		if !diagonal(curDir) {
+			if ws.walkable(x, y, curDir, 2) && !ws.walkable(x, y, curDir, 3) {
+				s.dirAdd((curDir + 2) % 8)
+				s.dirAdd((curDir + 1) % 8)
+			}
+			if ws.walkable(x, y, curDir, 6) && !ws.walkable(x, y, curDir, 5) {
+				s.dirAdd((curDir + 6) % 8)
+				s.dirAdd((curDir + 7) % 8)
+			}
+		}
+	} else {
+		if diagonal(curDir) {
+			if ws.walkable(x, y, curDir, 6) && !ws.walkable(x, y, curDir, 5) {
+				s.dirAdd((curDir + 6) % 8)
+			}
+			if ws.walkable(x, y, curDir, 2) && !ws.walkable(x, y, curDir, 3) {
+				s.dirAdd((curDir + 2) % 8)
+			}
+		} else {
+			if ws.walkable(x, y, curDir, 1) && !ws.walkable(x, y, curDir, 2) {
+				s.dirAdd((curDir + 1) % 8)
+			}
+			if ws.walkable(x, y, curDir, 7) && !ws.walkable(x, y, curDir, 6) {
+				s.dirAdd((curDir + 7) % 8)
+			}
+		}
 	}
-	if !ws.walkable(x, y, curDir, 4) {
-		s.dirAdd((curDir + 5) % 6)
-	}
-	return s
+	return
 }
 
 func (ws *WorkSpace) walkable(x, y, curDir, nextDir int32) bool {
@@ -207,61 +251,51 @@ func Move(x, y, d int32) (int32, int32) {
 	return x, y
 }
 
-func dist(x, y, fx, fy int32) int32 {
-	q, r := xy2qr(x, y)
-	fq, fr := xy2qr(fx, fy)
-	return (abs(q-fq) + abs(r-fr) + abs(q+r-fq-fr)) / 2
-}
-
-func xy2qr(x, y int32) (q, r int32) {
-	return x - (y-(y&1))/2, y
-}
-func qr2xy(q, r int32) (x, y int32) {
-	return q + (r-(r&1))/2, r
+func dist(x1, y1, x2, y2 int32) int32 {
+	dx, dy := x2-x1, y2-y1
+	if dx < 0 {
+		dx = -dx
+	}
+	if dy < 0 {
+		dy = -dy
+	}
+	if dy >= dx {
+		return dx*7 + (dy-dx)*5
+	} else {
+		return dy*7 + (dx-dy)*5
+	}
 }
 
 func midPoint(x, y, fx, fy int32) (mx, my int32, ok bool) {
-	var (
-		q, r       = xy2qr(x, y)
-		fq, fr     = xy2qr(fx, fy)
-		s, fs      = -q - r, -fq - fr
-		dq, dr, ds = q - fq, r - fr, s - fs
-		mq, mr, ms int32
-	)
-	if dq == 0 || dr == 0 || ds == 0 {
-		return // no midpoint
+	dx, dy := x-fx, y-fy
+	if dx < 0 {
+		dx = -dx
+	}
+	if dy < 0 {
+		dy = -dy
+	}
+	if dx == 0 || dy == 0 || dx == dy {
+		return
+	}
+	span := dx
+	if dy < dx {
+		span = dy
 	}
 	switch {
-	case dr > 0 && dq > 0:
-		mq, ms = fq+dq, fs-dq
-		mr = -mq - ms
-	case dr > 0 && ds > 0:
-		mr, mq = fr+dr, fq-dr
-		ms = -mq - mr
-	case dr > 0:
-		mq, mr = fq+dq, fr-dq
-		ms = -mq - mr
-	case dq < 0:
-		mr, ms = fr+dr, fs-dr
-		mq = -mr - ms
-	case ds < 0:
-		ms, mq = fs+ds, fq-ds
-		mr = -mq - ms
+	case x > fx && y > fy: // top-right
+		mx, my = fx+span, fy+span
+	case x > fx && y < fy: // bot-right
+		mx, my = fx+span, fy-span
+	case x < fx && y > fy: // top-left
+		mx, my = fx-span, fy+span
+	case x < fx && y < fy: // bot-left
+		mx, my = fx-span, fy-span
 	default:
-		ms, mr = fs+ds, fr-ds
-		mq = -mr - ms
+		panic("unreachable")
 	}
-	mx, my = qr2xy(mq, mr)
 	return mx, my, true
 }
 
-func spread(d int32) bool {
-	return d%2 == 0
-}
-
-func abs(x int32) int32 {
-	if x < 0 {
-		return -x
-	}
-	return x
+func diagonal(d int32) bool {
+	return d&0x1 == 1
 }

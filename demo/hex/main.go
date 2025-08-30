@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/fogleman/gg"
-	"github.com/legamerdc/pathfinding/grid"
-	"github.com/legamerdc/pathfinding/grid/hex"
+	"github.com/legamerdc/pathfinding/groute/grid"
+	"github.com/legamerdc/pathfinding/groute/hex"
 )
 
 const (
