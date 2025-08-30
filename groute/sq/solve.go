@@ -80,7 +80,7 @@ func (ws *WorkSpace) Solve(sx, sy, ex, ey int32) (p []grid.PathGrid, ok bool) {
 
 func (ws *WorkSpace) jump(x, y, fx, fy, d, c int32) bool {
 	for {
-		x, y = Move(x, y, d)
+		x, y = move(x, y, d)
 		if !ws.Map.Available(x, y) {
 			return false
 		}
@@ -98,7 +98,10 @@ func (ws *WorkSpace) jump(x, y, fx, fy, d, c int32) bool {
 			return false
 		}
 		if diagonal(d) {
-			if ws.jump(x, y, (d+7)%8, fx, fy, c) || ws.jump(x, y, (d+1)%8, fx, fy, c) {
+			if ws.jump(x, y, fx, fy, (d+7)%8, c) {
+				return true
+			}
+			if ws.jump(x, y, fx, fy, (d+1)%8, c) {
 				return true
 			}
 		}
@@ -205,7 +208,7 @@ func (ws *WorkSpace) forceDir(x, y, curDir int32) (s dirSet) {
 }
 
 func (ws *WorkSpace) walkable(x, y, curDir, nextDir int32) bool {
-	x, y = Move(x, y, (curDir+nextDir)%6)
+	x, y = move(x, y, (curDir+nextDir)%8)
 	return ws.Map.Available(x, y)
 }
 
@@ -231,24 +234,24 @@ func (ws *WorkSpace) path(sx, sy int32) (p []grid.PathGrid, ok bool) {
 	return p, true
 }
 
-func Move(x, y, d int32) (int32, int32) {
+func move(x, y, d int32) (int32, int32) {
 	switch d {
-	case 0:
+	case 1, 2, 3:
 		x++
-	case 3:
+	case 5, 6, 7:
 		x--
-	case 1, 5:
-		x += y & 1
-	case 2, 4:
-		x -= 1 - y&1
 	}
 	switch d {
-	case 1, 2:
-		y--
-	case 4, 5:
+	case 0, 1, 7:
 		y++
+	case 3, 4, 5:
+		y--
 	}
 	return x, y
+}
+
+func diagonal(d int32) bool {
+	return d&0x1 == 1
 }
 
 func dist(x1, y1, x2, y2 int32) int32 {
@@ -277,10 +280,7 @@ func midPoint(x, y, fx, fy int32) (mx, my int32, ok bool) {
 	if dx == 0 || dy == 0 || dx == dy {
 		return
 	}
-	span := dx
-	if dy < dx {
-		span = dy
-	}
+	span := min(dx, dy)
 	switch {
 	case x > fx && y > fy: // top-right
 		mx, my = fx+span, fy+span
@@ -294,8 +294,4 @@ func midPoint(x, y, fx, fy int32) (mx, my int32, ok bool) {
 		panic("unreachable")
 	}
 	return mx, my, true
-}
-
-func diagonal(d int32) bool {
-	return d&0x1 == 1
 }

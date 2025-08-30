@@ -4,6 +4,10 @@
 
 剪枝策略 [Aditya Subramanian](https://adityasubramanian.weebly.com/uploads/7/0/6/3/70633237/jump_point_search_on_hexagonal_grids.pdf)
 
-代码位置 https://github.com/LeGamerDc/pathfinding/tree/main/grid/hex
+代码位置 https://github.com/LeGamerDc/pathfinding/tree/main/groute/hex
 
 demo位置 https://github.com/LeGamerDc/pathfinding/tree/main/demo/hex
+
+## 正方形网格 JPS 寻路
+
+代码位置 https://github.com/LeGamerDc/pathfinding/tree/main/groute/sq
