@@ -1,7 +1,6 @@
 package grid
 
 import (
-	"container/heap"
 	"unsafe"
 )
 
@@ -26,7 +25,20 @@ type Gnode struct {
 	Dir       int32
 	Cost      int32 // g
 	Total     int32 // g+h
+	index     int32
 	Status    NodeStatus
+}
+
+func (n *Gnode) GetHeapIndex() int32 {
+	return n.index
+}
+
+func (n *Gnode) SetHeapIndex(index int32) {
+	n.index = index
+}
+
+func (n *Gnode) Compare(other *Gnode) int32 {
+	return int32(n.Total - other.Total)
 }
 
 type NodePool struct {
@@ -76,67 +88,67 @@ func (p *NodePool) FindNode(x, y int32) *Gnode {
 	return nil
 }
 
-type nodes []*Gnode
+// type NodeQueue struct {
+// 	mHeap nodes
+// }
 
-func (n *nodes) Len() int {
-	return len(*n)
-}
+// func NewNodeQueue(size int) *NodeQueue {
+// 	return &NodeQueue{
+// 		mHeap: make([]*Gnode, 0, size+1),
+// 	}
+// }
 
-func (n *nodes) Less(i, j int) bool {
-	return (*n)[i].Total < (*n)[j].Total
-}
+// func (q *NodeQueue) Push(x *Gnode) {
+// 	heap.Push(&q.mHeap, x)
+// }
 
-func (n *nodes) Swap(i, j int) {
-	(*n)[i], (*n)[j] = (*n)[j], (*n)[i]
-}
+// func (q *NodeQueue) Pop() *Gnode {
+// 	return heap.Pop(&q.mHeap).(*Gnode)
+// }
 
-func (n *nodes) Push(x interface{}) {
-	*n = append(*n, x.(*Gnode))
-}
+// func (q *NodeQueue) Top() *Gnode {
+// 	return q.mHeap[0]
+// }
 
-func (n *nodes) Pop() interface{} {
-	var l = len(*n) - 1
-	var x = (*n)[l]
-	(*n)[l] = nil
-	*n = (*n)[:l]
-	return x
-}
+// func (q *NodeQueue) Fix(y *Gnode) {
+// 	for i, x := range q.mHeap {
+// 		if x == y {
+// 			heap.Fix(&q.mHeap, i)
+// 			return
+// 		}
+// 	}
+// }
 
-type NodeQueue struct {
-	mHeap nodes
-}
+// func (q *NodeQueue) Empty() bool {
+// 	return len(q.mHeap) == 0
+// }
 
-func NewNodeQueue(size int) *NodeQueue {
-	return &NodeQueue{
-		mHeap: make([]*Gnode, 0, size+1),
-	}
-}
+// func (q *NodeQueue) Clear() {
+// 	q.mHeap = q.mHeap[:0]
+// }
 
-func (q *NodeQueue) Push(x *Gnode) {
-	heap.Push(&q.mHeap, x)
-}
+// type nodes []*Gnode
 
-func (q *NodeQueue) Pop() *Gnode {
-	return heap.Pop(&q.mHeap).(*Gnode)
-}
+// func (n *nodes) Len() int {
+// 	return len(*n)
+// }
 
-func (q *NodeQueue) Top() *Gnode {
-	return q.mHeap[0]
-}
+// func (n *nodes) Less(i, j int) bool {
+// 	return (*n)[i].Total < (*n)[j].Total
+// }
 
-func (q *NodeQueue) Fix(y *Gnode) {
-	for i, x := range q.mHeap {
-		if x == y {
-			heap.Fix(&q.mHeap, i)
-			return
-		}
-	}
-}
+// func (n *nodes) Swap(i, j int) {
+// 	(*n)[i], (*n)[j] = (*n)[j], (*n)[i]
+// }
 
-func (q *NodeQueue) Empty() bool {
-	return len(q.mHeap) == 0
-}
+// func (n *nodes) Push(x interface{}) {
+// 	*n = append(*n, x.(*Gnode))
+// }
 
-func (q *NodeQueue) Clear() {
-	q.mHeap = q.mHeap[:0]
-}
+// func (n *nodes) Pop() interface{} {
+// 	var l = len(*n) - 1
+// 	var x = (*n)[l]
+// 	(*n)[l] = nil
+// 	*n = (*n)[:l]
+// 	return x
+// }

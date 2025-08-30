@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/legamerdc/pathfinding/groute/grid"
+	"github.com/legamerdc/pathfinding/utils/heap"
 )
 
 // 创建一个简单的测试网格
@@ -519,7 +520,7 @@ func BenchmarkNodePool_Operations(b *testing.B) {
 
 // 基准测试：优先队列操作
 func BenchmarkNodeQueue_Operations(b *testing.B) {
-	queue := grid.NewNodeQueue(1000)
+	queue := heap.NewHeap[*grid.Gnode](1000)
 	pool := grid.NewNodePool(1000)
 
 	// 预创建一些节点

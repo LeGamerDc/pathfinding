@@ -4,6 +4,7 @@ import (
 	"slices"
 
 	"github.com/legamerdc/pathfinding/groute/grid"
+	"github.com/legamerdc/pathfinding/utils/heap"
 )
 
 /*
@@ -42,14 +43,14 @@ type WorkSpace struct {
 	Map *grid.Local
 
 	pool       *grid.NodePool
-	heap       *grid.NodeQueue
+	heap       *heap.Heap[*grid.Gnode]
 	endX, endY int32
 }
 
 func NewWorkSpace(size int) *WorkSpace {
 	return &WorkSpace{
 		pool: grid.NewNodePool(int32(size)),
-		heap: grid.NewNodeQueue(size),
+		heap: heap.NewHeap[*grid.Gnode](size),
 	}
 }
 
