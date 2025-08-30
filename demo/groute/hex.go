@@ -15,7 +15,7 @@ import (
 const (
 	ox    = 100
 	oy    = 100
-	ratio = 0.41
+	ratio = 0.277
 
 	nx, ny = 3, 3
 )
@@ -26,7 +26,7 @@ var (
 	colorR = color.RGBA{R: 255, G: 0, B: 0, A: 255}
 )
 
-func main() {
+func hexDemo() {
 	bg := gg.NewContext(1000, 1000)
 	ws := CreateMap()
 	for i := int32(0); i < 16*nx; i++ {
@@ -88,14 +88,6 @@ func center(x, y int32) (cx, cy float64) {
 	cy = float64(y) * 15
 	cx = math.Sqrt(3) * 5 * float64(2*x+(y&1))
 	return
-}
-
-// drawLine draw a line from (x1,y1) to (x2,y2) use color c.
-func drawLine(ctx *gg.Context, x1, y1, x2, y2 float64, c color.Color) {
-	ctx.SetColor(c)
-	ctx.SetLineWidth(3)
-	ctx.DrawLine(x1, y1, x2, y2)
-	ctx.Stroke()
 }
 
 // drawHexagon draw a hexagon at pos (x, y) with size, fill it with color and draw line use color.Black

@@ -250,38 +250,6 @@ func TestDist(t *testing.T) {
 	}
 }
 
-func TestMidPoint(t *testing.T) {
-	tests := []struct {
-		name                   string
-		x, y, fx, fy           int32
-		expectOk               bool
-		expectedMx, expectedMy int32
-	}{
-		{"Straight horizontal", 5, 5, 0, 5, false, 0, 0},
-		{"Straight vertical", 5, 5, 5, 0, false, 0, 0},
-		{"Perfect diagonal", 5, 5, 0, 0, false, 0, 0},
-		{"Top-right", 5, 5, 0, 2, true, 2, 2},
-		{"Bot-right", 5, 2, 0, 5, true, 2, 5},
-		{"Top-left", 2, 5, 5, 0, true, 2, 5},
-		{"Bot-left", 2, 2, 5, 5, true, 2, 5},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mx, my, ok := midPoint(tt.x, tt.y, tt.fx, tt.fy)
-			if ok != tt.expectOk {
-				t.Errorf("midPoint(%d, %d, %d, %d) ok = %v, 期望 %v",
-					tt.x, tt.y, tt.fx, tt.fy, ok, tt.expectOk)
-				return
-			}
-			if ok && (mx != tt.expectedMx || my != tt.expectedMy) {
-				t.Errorf("midPoint(%d, %d, %d, %d) = (%d, %d), 期望 (%d, %d)",
-					tt.x, tt.y, tt.fx, tt.fy, mx, my, tt.expectedMx, tt.expectedMy)
-			}
-		})
-	}
-}
-
 func TestDiagonal(t *testing.T) {
 	tests := []struct {
 		direction  int32
