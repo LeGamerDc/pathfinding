@@ -38,7 +38,8 @@ func (w *Local) GetGrid(nx, ny int32) *Grid {
 }
 
 func (w *Local) Available(x, y int32) bool {
-	if x < 0 || x >= w.Nx*g16 || y < 0 || y >= w.Ny*g16 {
+	//  x < 0 || x >= w.Nx*g16 || y < 0 || y >= w.Ny*g16
+	if uint32(x) >= uint32(w.Nx*g16) || uint32(y) >= uint32(w.Ny*g16) {
 		return false
 	}
 	var (
@@ -46,7 +47,7 @@ func (w *Local) Available(x, y int32) bool {
 		ix, iy = x % g16, y % g16
 	)
 	g := w.Grids[nx][ny]
-	return g.Bits[iy]>>ix&1 == 0
+	return g.Bits[iy]&(1<<ix) == 0
 }
 
 func (w *Local) Set(x, y int32) {

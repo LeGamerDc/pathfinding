@@ -2,6 +2,8 @@ package sq
 
 import (
 	"context"
+	"fmt"
+	"math/rand/v2"
 	"testing"
 	"time"
 
@@ -557,4 +559,41 @@ func BenchmarkNodeQueue_Operations(b *testing.B) {
 			queue.Fix(nodes[j])
 		}
 	}
+}
+
+const (
+	sqNx, sqNy = 3, 3
+	sqRatio    = 0.25
+)
+
+func createSqMap() *WorkSpace {
+	m := grid.NewLocal(sqNx, sqNy)
+	for i := 0; i < sqNx; i++ {
+		for j := 0; j < sqNy; j++ {
+			m.SetGrid(int32(i), int32(j), new(grid.Grid))
+		}
+	}
+	ws := NewWorkSpace(1200)
+	for i := int32(0); i < 16*sqNx; i++ {
+		for j := int32(0); j < 16*sqNy; j++ {
+			if (i == 0 && j == 0) || (i == 16*sqNx-1 && j == 16*sqNy-1) {
+				continue
+			}
+			if rand.Float32() < sqRatio {
+				m.Set(i, j)
+			}
+		}
+	}
+	ws.Reset(m)
+	return ws
+}
+
+func BenchmarkRealPath(b *testing.B) {
+	ws := createSqMap()
+	b.ResetTimer()
+	_, ok := ws.Solve(0, 0, 16*sqNx-1, 16*sqNy-1)
+	for i := 0; i < b.N; i++ {
+		ws.Solve(0, 0, 16*sqNx-1, 16*sqNy-1)
+	}
+	fmt.Println(ok)
 }
