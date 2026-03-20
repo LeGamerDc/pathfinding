@@ -24,6 +24,7 @@ var (
 	sqColorG = color.RGBA{R: 144, G: 238, B: 144, A: 128}
 	sqColorB = color.RGBA{R: 169, G: 169, B: 169, A: 255}
 	sqColorR = color.RGBA{R: 255, G: 0, B: 0, A: 255}
+	sqColorN = color.RGBA{R: 0, G: 102, B: 255, A: 255}
 )
 
 func sqDemo() {
@@ -42,8 +43,9 @@ func sqDemo() {
 	fmt.Println("start solve")
 	start := time.Now()
 	var (
-		path []grid.PathGrid
-		ok   bool
+		path        []grid.PathGrid
+		naturalPath []grid.PathPoint
+		ok          bool
 	)
 	path, ok = ws.Solve(0, 0, 16*sqNx-1, 16*sqNy-1)
 
@@ -55,6 +57,15 @@ func sqDemo() {
 			x1, y1 := sqCenter(path[i-1].X, path[i-1].Y)
 			x2, y2 := sqCenter(path[i].X, path[i].Y)
 			drawLine(bg, sqOx+x1, sqOy+y1, sqOx+x2, sqOy+y2, sqColorR)
+		}
+	}
+
+	naturalPath, ok = ws.SolveNatural(0.2, 0.2, float64(16*sqNx)-0.2, float64(16*sqNy)-0.2)
+	if ok {
+		for i := 1; i < len(naturalPath); i++ {
+			x1, y1 := sqPoint(naturalPath[i-1].X, naturalPath[i-1].Y)
+			x2, y2 := sqPoint(naturalPath[i].X, naturalPath[i].Y)
+			drawLine(bg, sqOx+x1, sqOy+y1, sqOx+x2, sqOy+y2, sqColorN)
 		}
 	}
 
@@ -86,6 +97,12 @@ func createSqMap() *sq.WorkSpace {
 func sqCenter(x, y int32) (cx, cy float64) {
 	cx = float64(x) * float64(sqSize)
 	cy = float64(y) * float64(sqSize)
+	return
+}
+
+func sqPoint(x, y float64) (cx, cy float64) {
+	cx = (x - 0.5) * float64(sqSize)
+	cy = (y - 0.5) * float64(sqSize)
 	return
 }
 
