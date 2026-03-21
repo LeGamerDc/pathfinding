@@ -45,6 +45,7 @@ type WorkSpace struct {
 	endX, endY int32
 }
 
+// NewWorkSpace creates a reusable hex-grid search workspace.
 func NewWorkSpace(size int) *WorkSpace {
 	return &WorkSpace{
 		pool: grid.NewNodePool(int32(size)),
@@ -52,10 +53,12 @@ func NewWorkSpace(size int) *WorkSpace {
 	}
 }
 
+// Reset binds the workspace to a map before running Solve.
 func (ws *WorkSpace) Reset(m *grid.Local) {
 	ws.Map = m
 }
 
+// Solve searches a path on the hex grid from start to end cell coordinates.
 func (ws *WorkSpace) Solve(sx, sy, ex, ey int32) (p []grid.PathGrid, ok bool) {
 	ws.pool.Clear()
 	ws.heap.Clear()
@@ -188,6 +191,7 @@ func (ws *WorkSpace) path(sx, sy int32) (p []grid.PathGrid, ok bool) {
 	return p, true
 }
 
+// Move advances one step in direction d using this package's offset hex coordinates.
 func Move(x, y, d int32) (int32, int32) {
 	switch d {
 	case 0:

@@ -41,19 +41,20 @@ func (ws *WorkSpace) SolveNatural(sx, sy, ex, ey float64) ([]grid.PathPoint, boo
 	corridor := buildPathCorridor(ws.Map, expandGridPath(gridPath))
 	start := grid.PathPoint{X: sx, Y: sy}
 	end := grid.PathPoint{X: ex, Y: ey}
-	if segmentVisibleInCells(ws.Map, corridor, start, end) {
+	if segmentVisibleInCells(ws.Map, corridor, start, end) && segmentVisibleInMap(ws.Map, start, end) {
 		return []grid.PathPoint{start, end}, true
 	}
 
 	nodes := make([]grid.PathPoint, 0, 2+len(corridor))
 	nodes = append(nodes, start, end)
 	nodes = append(nodes, corridorCornerPoints(corridor, naturalMargin)...)
+	nodes = append(nodes, gridPathCenters(expandGridPath(gridPath))...)
 
 	path, ok := shortestVisiblePathInCells(ws.Map, corridor, nodes)
 	if !ok {
 		return nil, false
 	}
-	return compressNaturalPath(path), true
+	return compressNaturalPath(ws.Map, corridor, path), true
 }
 
 type cellSet map[grid.Gpos]struct{}
@@ -98,7 +99,30 @@ func buildPathCorridor(m *grid.Local, path []grid.PathGrid) cellSet {
 			cells.add(sideB.X, sideB.Y)
 		}
 	}
-	return cells
+	return dilateCorridor(m, cells)
+}
+
+func dilateCorridor(m *grid.Local, cells cellSet) cellSet {
+	expanded := make(cellSet, len(cells)*3)
+	for c := range cells {
+		expanded.add(c.X, c.Y)
+		for _, step := range []grid.Gpos{
+			{X: -1, Y: -1},
+			{X: -1, Y: 0},
+			{X: -1, Y: 1},
+			{X: 0, Y: -1},
+			{X: 0, Y: 1},
+			{X: 1, Y: -1},
+			{X: 1, Y: 0},
+			{X: 1, Y: 1},
+		} {
+			nx, ny := c.X+step.X, c.Y+step.Y
+			if cellInsideMap(m, nx, ny) && m.Available(nx, ny) {
+				expanded.add(nx, ny)
+			}
+		}
+	}
+	return expanded
 }
 
 type boundaryDir uint8
@@ -213,7 +237,7 @@ func shortestVisiblePathInCells(m *grid.Local, cells cellSet, nodes []grid.PathP
 	visible := make([][]int, len(nodes))
 	for i := 0; i < len(nodes); i++ {
 		for j := i + 1; j < len(nodes); j++ {
-			if segmentVisibleInCells(m, cells, nodes[i], nodes[j]) {
+			if segmentVisibleInCells(m, cells, nodes[i], nodes[j]) && segmentVisibleInMap(m, nodes[i], nodes[j]) {
 				visible[i] = append(visible[i], j)
 				visible[j] = append(visible[j], i)
 			}
@@ -267,16 +291,17 @@ func segmentVisibleInCells(m *grid.Local, cells cellSet, a, b grid.PathPoint) bo
 		m.Nx*16,
 		m.Ny*16,
 		func(x, y int32) bool { return cells.has(x, y) },
+		0,
 		a,
 		b,
 	)
 }
 
 func segmentVisibleInMap(m *grid.Local, a, b grid.PathPoint) bool {
-	return segmentVisibleWith(m.Nx*16, m.Ny*16, m.Available, a, b)
+	return segmentVisibleWith(m.Nx*16, m.Ny*16, m.Available, naturalMargin, a, b)
 }
 
-func segmentVisibleWith(width, height int32, open func(int32, int32) bool, a, b grid.PathPoint) bool {
+func segmentVisibleWith(width, height int32, open func(int32, int32) bool, margin float64, a, b grid.PathPoint) bool {
 	if !pointInOpenSpace(width, height, open, a.X, a.Y) || !pointInOpenSpace(width, height, open, b.X, b.Y) {
 		return false
 	}
@@ -319,7 +344,7 @@ func segmentVisibleWith(width, height int32, open func(int32, int32) bool, a, b 
 		}
 	}
 
-	return segmentHasMargin(width, height, open, a, b, naturalMargin)
+	return segmentHasMargin(width, height, open, a, b, margin)
 }
 
 func verticalBoundaryVisible(width, height int32, open func(int32, int32) bool, x int32, y1, y2 float64) bool {
@@ -631,7 +656,18 @@ func expandGridPath(path []grid.PathGrid) []grid.PathGrid {
 	return out
 }
 
-func compressNaturalPath(path []grid.PathPoint) []grid.PathPoint {
+func gridPathCenters(path []grid.PathGrid) []grid.PathPoint {
+	points := make([]grid.PathPoint, 0, len(path))
+	for _, p := range path {
+		points = append(points, grid.PathPoint{
+			X: float64(p.X) + 0.5,
+			Y: float64(p.Y) + 0.5,
+		})
+	}
+	return points
+}
+
+func compressNaturalPath(m *grid.Local, cells cellSet, path []grid.PathPoint) []grid.PathPoint {
 	if len(path) < 3 {
 		return path
 	}
@@ -641,7 +677,9 @@ func compressNaturalPath(path []grid.PathPoint) []grid.PathPoint {
 		prev := out[len(out)-1]
 		cur := path[i]
 		next := path[i+1]
-		if collinear(prev, cur, next) {
+		if collinear(prev, cur, next) &&
+			segmentVisibleInCells(m, cells, prev, next) &&
+			segmentVisibleInMap(m, prev, next) {
 			continue
 		}
 		out = append(out, cur)
@@ -734,14 +772,19 @@ func sign32(v int32) int32 {
 	}
 }
 
+// Len implements heap.Interface.
 func (h shortestHeap) Len() int { return len(h) }
 
+// Less implements heap.Interface.
 func (h shortestHeap) Less(i, j int) bool { return h[i].cost < h[j].cost }
 
+// Swap implements heap.Interface.
 func (h shortestHeap) Swap(i, j int) { h[i], h[j] = h[j], h[i] }
 
+// Push implements heap.Interface.
 func (h *shortestHeap) Push(x any) { *h = append(*h, x.(shortestState)) }
 
+// Pop implements heap.Interface.
 func (h *shortestHeap) Pop() any {
 	old := *h
 	n := len(old)

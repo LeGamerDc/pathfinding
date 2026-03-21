@@ -16,6 +16,7 @@ type Gpos struct {
 	X, Y int32
 }
 
+// Hash returns a hash value for the grid position.
 func (p Gpos) Hash() int32 {
 	return hash64(*(*int64)(unsafe.Pointer(&p)))
 }
@@ -29,14 +30,17 @@ type Gnode struct {
 	Status    NodeStatus
 }
 
+// GetHeapIndex returns the node index used by the heap implementation.
 func (n *Gnode) GetHeapIndex() int32 {
 	return n.index
 }
 
+// SetHeapIndex updates the node index used by the heap implementation.
 func (n *Gnode) SetHeapIndex(index int32) {
 	n.index = index
 }
 
+// Compare orders nodes by total estimated path cost.
 func (n *Gnode) Compare(other *Gnode) int32 {
 	return int32(n.Total - other.Total)
 }
@@ -48,6 +52,7 @@ type NodePool struct {
 	maxNodes, nodeCnt int32
 }
 
+// NewNodePool creates a reusable pool with capacity for maxNodes search nodes.
 func NewNodePool(maxNodes int32) *NodePool {
 	pool := &NodePool{
 		mNode:    make([]Gnode, maxNodes),
@@ -57,11 +62,13 @@ func NewNodePool(maxNodes int32) *NodePool {
 	return pool
 }
 
+// Clear resets the pool so it can be reused by another search.
 func (p *NodePool) Clear() {
 	clear(p.mHash)
 	p.nodeCnt = 0
 }
 
+// GetNode returns the node at (x, y), allocating it if needed and capacity remains.
 func (p *NodePool) GetNode(x, y int32) *Gnode {
 	pos := Gpos{X: x, Y: y}
 	i, ok := p.mHash[pos]
@@ -81,6 +88,7 @@ func (p *NodePool) GetNode(x, y int32) *Gnode {
 	return &p.mNode[i]
 }
 
+// FindNode returns the existing node at (x, y), or nil if it has not been allocated.
 func (p *NodePool) FindNode(x, y int32) *Gnode {
 	if i, ok := p.mHash[Gpos{X: x, Y: y}]; ok {
 		return &p.mNode[i]

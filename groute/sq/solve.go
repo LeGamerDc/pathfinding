@@ -47,6 +47,7 @@ type WorkSpace struct {
 	endX, endY int32
 }
 
+// NewWorkSpace creates a reusable square-grid search workspace.
 func NewWorkSpace(size int) *WorkSpace {
 	return &WorkSpace{
 		pool: grid.NewNodePool(int32(size)),
@@ -54,10 +55,12 @@ func NewWorkSpace(size int) *WorkSpace {
 	}
 }
 
+// Reset binds the workspace to a map before running Solve or SolveNatural.
 func (ws *WorkSpace) Reset(m *grid.Local) {
 	ws.Map = m
 }
 
+// Solve searches a path on the square grid from start to end cell coordinates.
 func (ws *WorkSpace) Solve(sx, sy, ex, ey int32) (p []grid.PathGrid, ok bool) {
 	ws.pool.Clear()
 	ws.heap.Clear()
